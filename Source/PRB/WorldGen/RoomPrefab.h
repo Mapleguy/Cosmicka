@@ -38,7 +38,8 @@ private:
 	UPROPERTY(Category = "Room Data", EditAnywhere)
 	int connectorCount;
 
-	//What type of room
+	//List of room connectors
+	UPROPERTY(Category = "Room Data", VisibleAnywhere)
 	TArray<URoomConnector*> roomConnectors;
 
 	//What type of room
@@ -55,5 +56,9 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	int GetConnectorCount();
+
+	URoomConnector* GetConnector(int num);
 
 };

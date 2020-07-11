@@ -25,6 +25,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Floors|Floor 1")
 	TArray<TSubclassOf<ARoomPrefab>> F1_Bosses;
 
+	UPROPERTY(VisibleAnywhere, Category = "Floors")
+	TArray<ARoomPrefab*> currentRooms;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -32,6 +35,8 @@ protected:
 	void GenerateLevel();
 
 	void GenerateSpawn();
+
+	void GenerateAdjacent();
 
 public:
 	// Called every frame

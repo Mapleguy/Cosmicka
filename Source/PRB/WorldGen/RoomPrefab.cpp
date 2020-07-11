@@ -23,7 +23,6 @@ void ARoomPrefab::BeginPlay()
 	Super::BeginPlay();
 	
 	GetComponents<URoomConnector>(roomConnectors, true);
-	GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Yellow, FString::FromInt(roomConnectors.Num()));
 }
 
 // Called every frame
@@ -31,4 +30,17 @@ void ARoomPrefab::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+int ARoomPrefab::GetConnectorCount() {
+	return roomConnectors.Num();
+}
+
+URoomConnector* ARoomPrefab::GetConnector(int num) {
+	if (roomConnectors[num]) {
+		return roomConnectors[num];
+	}
+	else {
+		return NULL;
+	}
 }
