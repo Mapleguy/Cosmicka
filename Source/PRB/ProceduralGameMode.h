@@ -3,7 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "WorldGen/RoomList.h"
+#include "WorldGen/LevelStruct.h"
 #include "ProceduralGameMode.generated.h"
 
 class ARoomPrefab;
@@ -16,14 +16,8 @@ class PRB_API AProceduralGameMode : public AGameModeBase
 private:
 	AProceduralGameMode();
 
-	UPROPERTY(EditAnywhere, Category = "Floors|Floor 1")
-	TArray<TSubclassOf<ARoomPrefab>> F1_Spawns;
-
-	UPROPERTY(EditAnywhere, Category = "Floors|Floor 1")
-	TArray<TSubclassOf<ARoomPrefab>> F1_Standards;
-
-	UPROPERTY(EditAnywhere, Category = "Floors|Floor 1")
-	TArray<TSubclassOf<ARoomPrefab>> F1_Bosses;
+	UPROPERTY(EditAnywhere, Category = "Floor Data")
+	FLevelScruct FLS_Cathedral;
 
 	UPROPERTY(VisibleAnywhere, Category = "Floors")
 	TArray<ARoomPrefab*> currentRooms;
@@ -36,7 +30,7 @@ protected:
 
 	void GenerateSpawn();
 
-	void GenerateAdjacent();
+	ARoomPrefab* GenerateAdjacent(TArray<TSubclassOf<ARoomPrefab>> roomList, ARoomPrefab* baseRoom, int baseConnector);
 
 public:
 	// Called every frame

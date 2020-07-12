@@ -23,25 +23,31 @@ void AProceduralGameMode::GenerateLevel() {
 	GenerateSpawn();
 }
 
-//Digusting code
+//Disgusting code
 void AProceduralGameMode::GenerateSpawn() {
-	if (F1_Spawns.Num() > 0) {
-		int numOptions = F1_Spawns.Num();
+	if (FLS_Cathedral.normalRooms.Num() > 0) {
+		int numOptions = FLS_Cathedral.normalRooms.Num();
 		int roomToPick = FMath::RandRange(0, numOptions - 1);
-		currentRooms.Add(GetWorld()->SpawnActor<ARoomPrefab>(F1_Spawns[roomToPick]));
+		currentRooms.Add(GetWorld()->SpawnActor<ARoomPrefab>(FLS_Cathedral.normalRooms[roomToPick]));
 		if (currentRooms[0]) {
 			for (int i = 0; i < currentRooms[0]->GetConnectorCount(); i++) {
-				URoomConnector* connector = currentRooms[0]->GetConnector(i);
-				if (connector) {
-					int numOptions2 = F1_Spawns.Num();
-					int roomToPick2 = FMath::RandRange(0, numOptions2 - 1);
-					TSubclassOf<ARoomPrefab> roomToSpawn = F1_Spawns[roomToPick2];
-					ARoomPrefab* thisRoom = GetWorld()->SpawnActor<ARoomPrefab>(roomToSpawn);
-					thisRoom->SetActorRotation((connector->GetForwardVector().Rotation() + FRotator(0, 180, 0)) - thisRoom->GetConnector(0)->GetRelativeRotation());
-					thisRoom->SetActorLocation(connector->GetComponentLocation() - thisRoom->GetConnector(0)->GetComponentLocation());
-					currentRooms.Add(thisRoom);
-				}
+				currentRooms.Add(GenerateAdjacent(FLS_Cathedral.normalRooms, currentRooms[0], i));
 			}
 		}
+	}
+}
+
+ARoomPrefab* AProceduralGameMode::GenerateAdjacent(TArray<TSubclassOf<ARoomPrefab>> roomList, ARoomPrefab* baseRoom, int baseConnector) {
+	URoomConnector* connector = baseRoom->GetConnector(baseConnector);
+	if (connector) {
+		TSubclassOf<ARoomPrefab> roomToSpawn = roomList[FMath::RandRange(0, roomList.Num() - 1)];
+		ARoomPrefab* thisRoom = GetWorld()->SpawnActor<ARoomPrefab>(roomToSpawn);
+		int connToPick = FMath::RandRange(0, thisRoom->GetConnectorCount() - 1);
+		thisRoom->SetActorRotation((connector->GetForwardVector().Rotation() + FRotator(0, 180, 0)) - thisRoom->GetConnector(connToPick)->GetRelativeRotation());
+		thisRoom->SetActorLocation(connector->GetComponentLocation() - thisRoom->GetConnector(connToPick)->GetComponentLocation());
+		return thisRoom;
+	}
+	else {
+		return NULL;
 	}
 }
