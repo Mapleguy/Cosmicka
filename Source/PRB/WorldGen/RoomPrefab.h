@@ -6,8 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "RoomPrefab.generated.h"
 
-class URoomConnector;
-class URoomDoorway;
+class UArrowComponent;
 
 UENUM()
 enum RoomType
@@ -22,28 +21,12 @@ class PRB_API ARoomPrefab : public AActor
 {
 	GENERATED_BODY()
 private:
-	//Root component
-	UPROPERTY(Category = "Room Data", EditAnywhere)
-	USceneComponent* root;
-
 	//Base room mesh
 	UPROPERTY(Category = "Room Data", EditAnywhere)
 	UStaticMeshComponent* baseMesh;
 
-	//What type of room
 	UPROPERTY(Category = "Room Data", EditAnywhere)
-	TEnumAsByte<RoomType> roomType;
-
-	//What type of room
-	UPROPERTY(Category = "Room Data", EditAnywhere)
-	int connectorCount;
-
-	//List of room connectors
-	UPROPERTY(Category = "Room Data", VisibleAnywhere)
-	TArray<URoomConnector*> roomConnectors;
-
-	//What type of room
-	TArray<URoomDoorway*> roomDoorways;
+	TArray<FTransform> connectionPoints;
 
 public:	
 	// Sets default values for this actor's properties
@@ -57,8 +40,9 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	int GetConnectorCount();
+	//
+	FTransform GetConnectionPoint(int connector);
 
-	URoomConnector* GetConnector(int num);
-
+	//
+	int GetConnectionCount();
 };

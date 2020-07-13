@@ -19,6 +19,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Floor Data")
 	FLevelScruct FLS_Cathedral;
 
+	UPROPERTY(EditAnywhere, Category = "Floor Data")
+	FLevelScruct currentFloor;
+
 	UPROPERTY(VisibleAnywhere, Category = "Floors")
 	TArray<ARoomPrefab*> currentRooms;
 
@@ -30,7 +33,9 @@ protected:
 
 	void GenerateSpawn();
 
-	ARoomPrefab* GenerateAdjacent(TArray<TSubclassOf<ARoomPrefab>> roomList, ARoomPrefab* baseRoom, int baseConnector);
+	void GenerateBranch(FTransform connector);
+
+	ARoomPrefab* GenerateAdjacent(TArray<TSubclassOf<ARoomPrefab>> roomList, FTransform connector);
 
 public:
 	// Called every frame
