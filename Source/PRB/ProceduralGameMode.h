@@ -33,9 +33,9 @@ protected:
 
 	void GenerateSpawn();
 
-	void GenerateBranch(FTransform connector);
+	void GenerateBranch(FTransform roomOrigin, FTransform connector);
 
-	ARoomPrefab* GenerateAdjacent(TArray<TSubclassOf<ARoomPrefab>> roomList, FTransform connector);
+	ARoomPrefab* GenerateAdjacent(TArray<TSubclassOf<ARoomPrefab>> roomList, FTransform roomOrigin, FTransform connector);
 
 public:
 	// Called every frame

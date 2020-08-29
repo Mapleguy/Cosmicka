@@ -26,7 +26,15 @@ void AProceduralGameMode::GenerateLevel() {
 	if (currentRooms[0]) {
 		int numSpawnConns = currentRooms[0]->GetConnectionCount();
 		for (int i = 0; i < numSpawnConns; i++) {
-			GenerateBranch(currentRooms[0]->GetConnectionPoint(i));
+			GenerateBranch(currentRooms[0]->GetTransform(), currentRooms[0]->GetConnectionPoint(i));
+		}
+	}
+
+	if (currentRooms.Num() < currentFloor.maxRooms) {
+		for (int i = 1; i < currentRooms.Num(); i++) {
+			for (int j = 0; j < currentRooms[i]->GetConnectionCount(); j++) {
+				GenerateBranch(currentRooms[i]->GetTransform(), currentRooms[i]->GetConnectionPoint(j));
+			}
 		}
 	}
 }
@@ -39,14 +47,16 @@ void AProceduralGameMode::GenerateSpawn() {
 	}
 }
 
-void AProceduralGameMode::GenerateBranch(FTransform connector) {
+void AProceduralGameMode::GenerateBranch(FTransform roomOrigin, FTransform connector) {
 	FTransform newConnector = connector;
+	FTransform newOrigin = roomOrigin;
 	while (currentRooms.Num() < currentFloor.maxRooms) {
-		int spawnChance = FMath::RandRange(0, 8);
+		int spawnChance = FMath::RandRange(0, 10);
 		if (spawnChance != 0) {
-			ARoomPrefab* newRoom = GenerateAdjacent(currentFloor.normalRooms, newConnector);
+			ARoomPrefab* newRoom = GenerateAdjacent(currentFloor.normalRooms, newOrigin, newConnector);
 			if (newRoom) {
 				newConnector = newRoom->GetConnectionPoint(FMath::RandRange(0, newRoom->GetConnectionCount() - 1));
+				newOrigin = newRoom->GetTransform();
 			}
 		}
 		else {
@@ -55,35 +65,43 @@ void AProceduralGameMode::GenerateBranch(FTransform connector) {
 	}
 }
 
-ARoomPrefab* AProceduralGameMode::GenerateAdjacent(TArray<TSubclassOf<ARoomPrefab>> roomList, FTransform connector) {
-	TSubclassOf<ARoomPrefab> roomToSpawn = roomList[FMath::RandRange(0, roomList.Num() - 1)];
+/*Rotation now working, position is off when more than 1 room away from spawn*/
+ARoomPrefab* AProceduralGameMode::GenerateAdjacent(TArray<TSubclassOf<ARoomPrefab>> roomList, FTransform roomOrigin, FTransform connector) {
+	if (currentRooms.Num() < currentFloor.maxRooms) {
+		TSubclassOf<ARoomPrefab> roomToSpawn = roomList[FMath::RandRange(0, roomList.Num() - 1)];
 
-	int connToPick = FMath::RandRange(0, roomToSpawn->GetDefaultObject<ARoomPrefab>()->GetConnectionCount() - 1);
-	FTransform connTransform = roomToSpawn->GetDefaultObject<ARoomPrefab>()->GetConnectionPoint(connToPick);
+		int connToPick = FMath::RandRange(0, roomToSpawn->GetDefaultObject<ARoomPrefab>()->GetConnectionCount() - 1);
+		FTransform newConnTransform = roomToSpawn->GetDefaultObject<ARoomPrefab>()->GetConnectionPoint(connToPick);
 
-	FTransform spawnTransform;
-	FRotator spawnRotation = ((connector.GetRotation().Rotator() + FRotator(0, 180, 0)) - connTransform.GetRotation().Rotator());
-	spawnTransform.SetRotation(spawnRotation.Quaternion());
+		FTransform spawnTransform;
+		FRotator connectorRotation = roomOrigin.GetRotation().Rotator() + connector.GetRotation().Rotator() - FRotator(0, 180, 0);
+		FRotator spawnRotation = (connectorRotation - newConnTransform.GetRotation().Rotator());
 
-	FRotator diff = connTransform.GetRotation().Rotator() - (connector.GetRotation().Rotator() - FRotator(0, 180, 0));
-	float theta = (diff.Yaw * 3.14159) / 180;
-	FVector newPosition = FVector((connTransform.GetLocation().Y * FMath::Sin(theta) + connTransform.GetLocation().X * FMath::Cos(theta)), (connTransform.GetLocation().Y * FMath::Cos(theta) + connTransform.GetLocation().X * FMath::Sin(theta)), connector.GetLocation().Z);
-	spawnTransform.SetLocation(connector.GetLocation() - newPosition);
-	/*GEngine->AddOnScreenDebugMessage(-1, 20, FColor::Red, FString::SanitizeFloat(theta));
-	GEngine->AddOnScreenDebugMessage(-1, 20, FColor::Blue, connTransform.GetLocation().ToString());
-	GEngine->AddOnScreenDebugMessage(-1, 20, FColor::Green, newPosition.ToString());*/
+		float theta = FMath::UnwindRadians((spawnRotation.Yaw * 3.14159265) / 180);
+		//FVector newPosition = FVector((newConnTransform.GetLocation().Y * FMath::Sin(theta) + newConnTransform.GetLocation().X * FMath::Cos(theta)), (newConnTransform.GetLocation().Y * FMath::Cos(theta) + newConnTransform.GetLocation().X * FMath::Sin(theta)), connector.GetLocation().Z);
+		FVector newPosition = FVector((newConnTransform.GetLocation().Y * FMath::Sin(theta) + newConnTransform.GetLocation().X * FMath::Cos(theta)),
+									  (newConnTransform.GetLocation().Y * FMath::Cos(theta) + newConnTransform.GetLocation().X * FMath::Sin(theta)),
+			                           newConnTransform.GetLocation().Z);
+		
+		GEngine->AddOnScreenDebugMessage(-1, 15, FColor::Yellow, newPosition.ToString());
 
-	FActorSpawnParameters params;
-	params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding;
+		spawnTransform.SetRotation(spawnRotation.Quaternion());
+		spawnTransform.SetLocation((roomOrigin.GetLocation() + connector.GetLocation()) - n ewPosition);
 
-	ARoomPrefab* thisRoom = GetWorld()->SpawnActor<ARoomPrefab>(roomToSpawn, spawnTransform, params);
-	if (thisRoom) {
-		//GEngine->AddOnScreenDebugMessage(-1, 15, FColor::Green, "Could Spawn Room");
-		currentRooms.Add(thisRoom);
-		return thisRoom;
+		FActorSpawnParameters params;
+		params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding;
+
+		ARoomPrefab* thisRoom = GetWorld()->SpawnActor<ARoomPrefab>(roomToSpawn, spawnTransform, params);
+
+		if (thisRoom) {
+			currentRooms.Add(thisRoom);
+			return thisRoom;
+		}
+		else {
+			return NULL;
+		}
 	}
 	else {
-		//GEngine->AddOnScreenDebugMessage(-1, 15, FColor::Red, "Could Not Spawn Room");
 		return NULL;
 	}
 }
