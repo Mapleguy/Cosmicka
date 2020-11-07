@@ -2,14 +2,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameModeBase.h"
+#include "GameFramework/GameMode.h"
 #include "WorldGen/LevelStruct.h"
 #include "ProceduralGameMode.generated.h"
 
 class ARoomPrefab;
+class URoomConnector;
 
 UCLASS()
-class PRB_API AProceduralGameMode : public AGameModeBase
+class PRB_API AProceduralGameMode : public AGameMode
 {
 	GENERATED_BODY()
 
@@ -33,9 +34,9 @@ protected:
 
 	void GenerateSpawn();
 
-	void GenerateBranch(FTransform roomOrigin, FTransform connector);
+	void GenerateBranch(URoomConnector* connector);
 
-	ARoomPrefab* GenerateAdjacent(TArray<TSubclassOf<ARoomPrefab>> roomList, FTransform roomOrigin, FTransform connector);
+	ARoomPrefab* GenerateAdjacent(TArray<TSubclassOf<ARoomPrefab>> roomList, URoomConnector* connector);
 
 public:
 	// Called every frame

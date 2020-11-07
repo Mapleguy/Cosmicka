@@ -7,6 +7,7 @@
 #include "RoomPrefab.generated.h"
 
 class UArrowComponent;
+class URoomConnector;
 
 UENUM()
 enum RoomType
@@ -26,7 +27,10 @@ private:
 	UStaticMeshComponent* baseMesh;
 
 	UPROPERTY(Category = "Room Data", EditAnywhere)
-	TArray<FTransform> connectionPoints;
+	int32 connCount;
+
+	UPROPERTY(Category = "Room Data", EditAnywhere)
+	TArray<URoomConnector*> connectionPoints;
 
 public:	
 	// Sets default values for this actor's properties
@@ -41,7 +45,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	//
-	FTransform GetConnectionPoint(int connector);
+	URoomConnector* GetConnectionPoint(int connector);
 
 	//
 	int GetConnectionCount();

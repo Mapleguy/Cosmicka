@@ -10,6 +10,11 @@ ARoomPrefab::ARoomPrefab()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	for (int32 i = 0; i < connCount; i++) {
+		FString theName = "Conn " + i;
+		CreateDefaultSubobject<URoomConnector>(FName(*theName));
+	}
+
 	baseMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Base Mesh"));
 	SetRootComponent(baseMesh);
 }
@@ -18,7 +23,6 @@ ARoomPrefab::ARoomPrefab()
 void ARoomPrefab::BeginPlay()
 {
 	Super::BeginPlay();
-
 }
 
 // Called every frame
@@ -28,7 +32,7 @@ void ARoomPrefab::Tick(float DeltaTime)
 
 }
 
-FTransform ARoomPrefab::GetConnectionPoint(int connector){
+URoomConnector* ARoomPrefab::GetConnectionPoint(int connector){
 	return connectionPoints[connector];
 }
 
