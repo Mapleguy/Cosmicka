@@ -11,6 +11,8 @@ class USpringArmComponent;
 class UCameraComponent;
 class UStatusComponent;
 
+class AInteractableActor;
+
 UCLASS()
 class PRB_API APlayerCharacter : public ACharacter
 {

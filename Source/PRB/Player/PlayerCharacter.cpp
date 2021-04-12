@@ -4,10 +4,13 @@
 #include "../Weapons/PlayerWeapon.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "../Interactables/InteractableActor.h"
 
 #ifdef UE_BUILD_DEBUG 
 #include "DrawDebugHelpers.h"
 #endif
+
+#define ECC_Interactable ECC_GameTraceChannel2
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -140,8 +143,18 @@ void APlayerCharacter::AttemptUse() {
 	FVector rayOrigin = mainCamera->GetComponentLocation();
 	FVector rayEndpoint = rayOrigin + (mainCamera->GetForwardVector() * rayLength);
 	FCollisionQueryParams params;
-	ActorLineTraceSingle(hit, rayOrigin, rayEndpoint, ECC_Visibility, params);
+	//params.bTraceComplex = true;
+	GetWorld()->LineTraceSingleByChannel(hit, rayOrigin, rayEndpoint, ECC_Interactable, params);
+	if (hit.IsValidBlockingHit()) {
+		//GEngine->AddOnScreenDebugMessage(-1, 3.0, FColor::Green, hit.Actor->GetClass());
+		if (hit.Actor->GetClass()->IsChildOf(AInteractableActor::StaticClass())) {
+			Cast<AInteractableActor>(hit.Actor)->Interact();
+		}
+		else {
+			GEngine->AddOnScreenDebugMessage(-1, 3.0, FColor::Red, "This is NOT an interactable");
+		}
+	}
 #ifdef UE_BUILD_DEBUG 
-	DrawDebugLine(GetWorld(), rayOrigin, rayEndpoint, FColor::Yellow, false, 5.0f);
+	DrawDebugLine(GetWorld(), rayOrigin, rayEndpoint, FColor::Red, false, 5.0f);
 #endif
 }

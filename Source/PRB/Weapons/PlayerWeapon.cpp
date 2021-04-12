@@ -37,8 +37,8 @@ void APlayerWeapon::Tick(float DeltaTime)
 }
 
 void APlayerWeapon::PrimaryMouse(bool pressed) {
-	//primaryMouseDown = pressed;
-	//SetFireTimer();
+	primaryMouseDown = pressed;
+	SetFireTimer();
 }
 
 void APlayerWeapon::SecondaryMouse(bool pressed) {
